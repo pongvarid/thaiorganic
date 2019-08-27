@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+
+            <v-content>
+                <v-toolbar color="primary">
+                    <a style="color:white;" href="index.html">Notification</a>&nbsp;&nbsp;
+                    <a style="color:white;" href="slide.html">Slide</a>
+                </v-toolbar>
+
+                <v-container column>
+                    <v-layout row wrap>
+                        <v-flex md4 xs12>
+                            <br><br><br>
+                            <form @submit.prevent="saveSlide()">
+                                <v-text-field v-model="form.head" label="หัวข้อ" rounded solo required></v-text-field>
+                                <v-textarea v-model="form.body" label="เนื้อหา" rounded solo required></v-textarea> 
+                                <a href="https://www.base64-image.de/" target="_blank">Image to Base64</a>
+                                <a href="https://www.img.in.th/" target="_blank">ฝากไฟล์รูป</a>
+                                <v-text-field v-model="form.images" label="รูป" rounded solo></v-text-field>
+                                <input v-model="form.color" type="color">
+                                <v-text-field v-model="form.color" label="color" rounded solo></v-text-field>
+                                <v-text-field v-model="form.class" label="class" rounded solo></v-text-field>
+                                <v-select solo required v-model="form.position" :items="items" label="label"></v-select>
+                                <v-btn type="submit" color="success">Create Slide</v-btn>
+                            </form>
+
+                            <hr>
+
+                        </v-flex>
+                        <v-flex md8 xs12>
+
+                            <div class="w3-container">
+                                <h2>List Slide</h2>
+                                <p>จัดการสไลด์</p>
+
+                                <table class="w3-table-all">
+                                    <thead>
+                                        <tr class="w3-green">
+                                            <th>รูป</th>
+                                            <th>หัวข้อ</th>
+                                            <th>เนื้อหา</th>
+                                            <td>สี</td>
+                                            <td>class</td>
+                                            <td>จัดการ</td>
+                                        </tr>
+                                    </thead>
+                                    <tr v-for="sli,index in data" :key="index">
+                                        <td><img style="height:60px;" :src="sli.images" alt=""></td>
+                                        <td>{{sli.head}}</td>
+                                        <td>{{sli.body}}</td>
+                                        <td>
+                                            <v-btn :style="`background:${sli.color};`" icon rounded></v-btn>
+                                        </td>
+                                        <td>{{sli.class}}</td>
+                                        <td>
+                                            <v-btn @click="deleteSlide(index)" color="red" dark rounded>ลบ</v-btn>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </v-flex>
+                    </v-layout>
+
+                </v-container>
+
+            </v-content>
+        </v-app>
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
+    <script>
+
+        new Vue({
+            el: '#app',
+            vuetify: new Vuetify(),
+            /*-------------------------Load Component---------------------------------------*/
+            components: {
+
+            },
+            /*-------------------------Set Component---------------------------------------*/
+            props: {
+
+            },
+            /*-------------------------DataVarible---------------------------------------*/
+            data() {
+                return {
+                    form: {
+                        head: '',
+                        body: '',
+                        class: '',
+                        color: '',
+                        position: 'left'
+                    },
+                    title: '',
+                    body: '',
+                    data: [],
+                    items: ['left', 'right']
+                };
+            },
+            /*-------------------------Run Methods when Start this Page------------------------------------------*/
+            async mounted() {
+                /**** Call loading methods*/
+                this.load();
+            },
+            /*-------------------------Run Methods when Start Routed------------------------------------------*/
+            async beforeRouteEnter(to, from, next) {
+                next()
+            },
+            /*-------------------------Vuex Methods and Couputed Methods------------------------------------------*/
+            computed: {
+
+            },
+            /*-------------------------Methods------------------------------------------*/
+            methods: {
+                async saveSlide() {
+                    await axios.post('https://thaiorganicplatform-18702.firebaseio.com/slide.json', this.form)
+                        .then((r) => {
+                            alert('สร้าง slide สำเร็จ')
+                            this.load();
+                        }).catch((e) => {
+                            alert(JSON.stringify(e));
+                        });
+                    this.form = {
+                        head: '',
+                        body: '',
+                        class: '',
+                        color: '',
+                        position: 'left'
+                    }
+                }, 
+                async  deleteSlide(data) {
+                    alert(JSON.stringify(data));
+                    await axios.delete('https://thaiorganicplatform-18702.firebaseio.com/slide/' + data + '.json')
+                        .then((r) => {
+
+                        }).catch((e) => {
+
+                        });
+                    await this.load();
+                },
+                /******* Methods default run ******/
+                load: async function () {
+                    await axios.get('https://thaiorganicplatform-18702.firebaseio.com/slide.json')
+                        .then((r) => {
+                            this.data = r.data
+                        }).catch((e) => {
+
+                        });
+
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>
